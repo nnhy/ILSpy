@@ -32,7 +32,7 @@ namespace ICSharpCode.Decompiler.Documentation
 	{
 		static readonly Lazy<XmlDocumentationProvider> mscorlibDocumentation = new Lazy<XmlDocumentationProvider>(LoadMscorlibDocumentation);
 		static readonly ConditionalWeakTable<ModuleDefinition, XmlDocumentationProvider> cache = new ConditionalWeakTable<ModuleDefinition, XmlDocumentationProvider>();
-		
+
 		static XmlDocumentationProvider LoadMscorlibDocumentation()
 		{
 			string xmlDocFile = FindXmlDocumentation("mscorlib.dll", TargetRuntime.Net_4_0)
@@ -42,11 +42,11 @@ namespace ICSharpCode.Decompiler.Documentation
 			else
 				return null;
 		}
-		
+
 		public static XmlDocumentationProvider MscorlibDocumentation {
 			get { return mscorlibDocumentation.Value; }
 		}
-		
+
 		public static XmlDocumentationProvider LoadDocumentation(ModuleDefinition module)
 		{
 			if (module == null)
@@ -69,10 +69,10 @@ namespace ICSharpCode.Decompiler.Documentation
 				return xmlDoc;
 			}
 		}
-		
+
 		static readonly string referenceAssembliesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"Reference Assemblies\Microsoft\\Framework");
 		static readonly string frameworkPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"Microsoft.NET\Framework");
-		
+
 		static string FindXmlDocumentation(string assemblyFileName, TargetRuntime runtime)
 		{
 			string fileName;
@@ -97,20 +97,30 @@ namespace ICSharpCode.Decompiler.Documentation
 			}
 			return fileName;
 		}
-		
+
 		static string LookupLocalizedXmlDoc(string fileName)
 		{
 			if (string.IsNullOrEmpty(fileName))
 				return null;
-			
+
 			string xmlFileName = Path.ChangeExtension(fileName, ".xml");
+
 			string currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName;
 			string localizedXmlDocFile = GetLocalizedName(xmlFileName, currentCulture);
-			
 			Debug.WriteLine("Try find XMLDoc @" + localizedXmlDocFile);
 			if (File.Exists(localizedXmlDocFile)) {
 				return localizedXmlDocFile;
 			}
+
+			if (currentCulture == "zh") {
+				currentCulture = "zh-Hans";
+				localizedXmlDocFile = GetLocalizedName(xmlFileName, currentCulture);
+				Debug.WriteLine("Try find XMLDoc @" + localizedXmlDocFile);
+				if (File.Exists(localizedXmlDocFile)) {
+					return localizedXmlDocFile;
+				}
+			}
+
 			Debug.WriteLine("Try find XMLDoc @" + xmlFileName);
 			if (File.Exists(xmlFileName)) {
 				return xmlFileName;
@@ -124,7 +134,7 @@ namespace ICSharpCode.Decompiler.Documentation
 			}
 			return null;
 		}
-		
+
 		static string GetLocalizedName(string fileName, string language)
 		{
 			string localizedXmlDocFile = Path.GetDirectoryName(fileName);
